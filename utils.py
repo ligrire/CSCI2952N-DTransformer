@@ -26,8 +26,8 @@ def cifar10_dataset(path='../data/vision/cifar10/'):
     return cifar10_train, cifar10_test
 
 
-def save_checkpoint(name, model):
-    torch.save(model.state_dict(), f"checkpoints/{name}.th")
+def save_checkpoint(path, model):
+    torch.save(model.state_dict(), path)
     
 def save_loss(path, lsts):
     with open(path, "w") as f:
