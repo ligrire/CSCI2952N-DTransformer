@@ -18,23 +18,21 @@ import random
 import warmup_scheduler
 
 
-def train(channel_size_lst, div_indices, start_index, end_index, name, dataset_path,batch_size, num_workers, dim, depth, mlp_dim, heads, **_):
+def train(channel_size_lst, div_indices, start_index, end_index, name, dataset_path,batch_size, num_workers, dim, depth, mlp_dim, heads, finetune_epochs, warm_up_epoch, finetune_lr, **_):
     model = build_model(channel_size_lst, div_indices, start_index, end_index, name, dim, depth, mlp_dim, heads)
     train_dataset, val_dataset = cifar10_dataset(dataset_path)
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers, drop_last=True)
     val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers, drop_last=False)
 
     loss_fn = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=1e-3)
-    warm_up_epoch = 5
-    epochs = 200
-    base_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, epochs)
+    optimizer = optim.Adam(model.parameters(), lr=finetune_lr)
+    base_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, finetune_epochs)
     scheduler = warmup_scheduler.GradualWarmupScheduler(optimizer, multiplier=1., total_epoch=warm_up_epoch, after_scheduler=base_scheduler)
     optimizer.zero_grad()
     optimizer.step()
     train_accuracies = []
     val_accuracies = []
-    for epoch in range(epochs):    
+    for epoch in range(finetune_epochs):    
         scheduler.step(epoch + 1)
         train_epoch(model, train_dataloader, optimizer, loss_fn, train_accuracies)
         val_epoch(model, val_dataloader, loss_fn, val_accuracies)

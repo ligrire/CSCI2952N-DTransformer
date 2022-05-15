@@ -18,21 +18,21 @@ import warmup_scheduler
 from resnet import *
 from utils import save_checkpoint, save_loss, cifar10_dataset
 
-def train(name, channel_size_lst, div_indices, start_index, end_index, dataset_path, batch_size, num_workers, lr, epochs, warm_up_epoch, teacher_model, dim, depth, mlp_dim, heads, **_):
+def train(name, channel_size_lst, div_indices, start_index, end_index, dataset_path, batch_size, num_workers, pretrain_lr, pretrain_epochs, warm_up_epoch, teacher_model, dim, depth, mlp_dim, heads, **_):
     model, teacher = build_model(channel_size_lst, div_indices, start_index, end_index, teacher_model, dim, depth, mlp_dim, heads)
     train_dataset, _ = cifar10_dataset(dataset_path)
     train_dataset, val_dataset = random_split(train_dataset, [47500, 2500])
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers, drop_last=True)
     val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers, drop_last=False)
-    optimizer = optim.Adam(model.parameters(), lr)
-    base_scheduler = torch.optim.lr_scheduler.LinearLR(optimizer, start_factor=1, end_factor=1e-2, total_iters=epochs)
+    optimizer = optim.Adam(model.parameters(), pretrain_lr)
+    base_scheduler = torch.optim.lr_scheduler.LinearLR(optimizer, start_factor=1, end_factor=1e-2, total_iters=pretrain_epochs)
     scheduler = warmup_scheduler.GradualWarmupScheduler(optimizer, multiplier=1., total_epoch=warm_up_epoch, after_scheduler=base_scheduler)
     train_losses = []
     val_losses = []
     optimizer.zero_grad()
     optimizer.step()
     best_loss = 100000
-    for epoch in range(epochs):    
+    for epoch in range(pretrain_epochs):    
         scheduler.step(epoch + 1)
         train_epoch(model, train_dataloader, optimizer, teacher, train_losses)
         epoch_loss = val_epoch(model, val_dataloader, teacher, val_losses)
