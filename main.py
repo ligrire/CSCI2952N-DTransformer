@@ -1,5 +1,4 @@
 import argparse
-from tkinter import N
 import finetune
 import pretrain
 import torch
