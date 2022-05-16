@@ -1,5 +1,7 @@
 # CSCI2952N-DTransformer
 
+Install requirements:
+`pip install -r requirements.txt`
 To train a vision transformer using resnet32 as teacher with all layers, run: 
 
 `python main.py`
