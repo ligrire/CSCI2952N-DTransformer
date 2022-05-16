@@ -13,4 +13,3 @@ The resnet implementation is borrowed from [here](https://github.com/akamaster/p
 
 The vision transformer implementation is borrowed from [here](https://github.com/lucidrains/vit-pytorch) with modification on seperation of encoder and classification MLP head.
 
-The github is https://github.com/ligrire/CSCI2952N-DTransformer
